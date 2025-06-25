@@ -5,7 +5,7 @@ Este é um projeto de estudo para aprender e praticar automação de testes com 
 ## Índice
 
 - [Objetivo](#objetivo)
-- [Funcionalidades Testadas](#funcionalidades-testadas)
+- [Funcionalidades Testadas](#funcionalidades-testadas) 
 - [Problemas e Riscos](#problemas-e-riscos)
 - [Tecnologias Utilizadas](#tecnologias-utilizadas)
 - [Estrutura do Projeto](#estrutura-do-projeto)
