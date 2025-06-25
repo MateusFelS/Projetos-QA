@@ -1,16 +1,24 @@
-name: Cypress Tests
+name: Coffee Cart
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'cypress/coffee-cart-tests/**'
   pull_request:
     branches:
       - main
+    paths:
+      - 'cypress/coffee-cart-tests/**'
 
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: cypress/coffee-cart-tests
 
     steps:
       - name: Checkout repository
