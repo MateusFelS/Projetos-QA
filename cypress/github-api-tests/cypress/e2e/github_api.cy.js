@@ -99,7 +99,7 @@ describe('API do GitHub - Testes Diversos', () => {
   it('TC006 - Buscar repositório específico', () => {
     githubRequest('GET', '/repos/MateusFels/processamento_imagens').then(response => {
       expect(response.status).to.eq(200);
-      expect(response.body.id).to.eq(885622978);
+      expect(response.body.id).to.eq(644852658);
     });
   });
 
