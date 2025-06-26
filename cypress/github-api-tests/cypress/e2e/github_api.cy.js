@@ -57,7 +57,7 @@ describe('API do GitHub - Testes Diversos', () => {
     githubRequest('GET', '/users/MateusFels/repos').then(response => {
       expect(response.status).to.eq(200);
       const repoNames = response.body.map(repo => repo.name);
-      expect(repoNames).to.include('coffee-cart-tests');
+      expect(repoNames).to.include('processamento_imagens');
     });
   });
 
@@ -97,7 +97,7 @@ describe('API do GitHub - Testes Diversos', () => {
   });
 
   it('TC006 - Buscar repositório específico', () => {
-    githubRequest('GET', '/repos/MateusFels/coffee-cart-tests').then(response => {
+    githubRequest('GET', '/repos/MateusFels/processamento_imagens').then(response => {
       expect(response.status).to.eq(200);
       expect(response.body.id).to.eq(885622978);
     });
@@ -135,7 +135,7 @@ describe('API do GitHub - Testes Diversos', () => {
   });
 
   it('TC009 - Listar issues abertas', () => {
-    githubRequest('GET', '/repos/MateusFels/coffee-cart-tests/issues?state=open').then(response => {
+    githubRequest('GET', '/repos/MateusFels/processamento_imagens/issues?state=open').then(response => {
       expect(response.status).to.eq(200);
       response.body.forEach(issue => {
         expect(issue.state).to.eq('open');
@@ -144,7 +144,7 @@ describe('API do GitHub - Testes Diversos', () => {
   });
 
   it('TC013 - Listar colaboradores', () => {
-    githubRequest('GET', '/repos/MateusFels/coffee-cart-tests/collaborators').then(response => {
+    githubRequest('GET', '/repos/MateusFels/processamento_imagens/collaborators').then(response => {
       expect(response.status).to.eq(200);
       const collaboratorsType = response.body.map(c => c.type);
       expect(collaboratorsType).to.include('User');
@@ -156,7 +156,7 @@ describe('API do GitHub - Testes Diversos', () => {
 
     githubRequest(
       'PUT',
-      `/repos/MateusFels/coffee-cart-tests/collaborators/${username}`,
+      `/repos/MateusFels/processamento_imagens/collaborators/${username}`,
       {},
       {
         body: {
@@ -172,7 +172,7 @@ describe('API do GitHub - Testes Diversos', () => {
 
     githubRequest(
       'DELETE',
-      `/repos/MateusFels/coffee-cart-tests/collaborators/${username}`
+      `/repos/MateusFels/processamento_imagens/collaborators/${username}`
     ).then(response => {
       expect(response.status).to.eq(204);
     });
