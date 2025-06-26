@@ -26,7 +26,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./cypress/github-api-tests
-        run: npm ci
+        run: npm install
 
       - name: Run Cypress tests
         working-directory: ./cypress/github-api-tests
