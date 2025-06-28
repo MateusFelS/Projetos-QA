@@ -2,13 +2,9 @@ name: Coffee Cart
 
 on:
   push:
-    branches:
-      - main
     paths:
       - 'cypress/coffee-cart-tests/**'
   pull_request:
-    branches:
-      - main
     paths:
       - 'cypress/coffee-cart-tests/**'
 
