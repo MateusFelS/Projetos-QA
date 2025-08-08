@@ -1,13 +1,15 @@
-name: Playwright Tests
+name: Playwright API Lanches
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - main
   pull_request:
-    branches: [ main ]
+    branches: 
+      - main
 
 jobs:
-  test:
+  API-Lanches-Test:
     timeout-minutes: 30
     runs-on: ubuntu-latest
 
@@ -21,11 +23,11 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        working-directory: TesteAutomatizado
+        working-directory: api-lanches
         run: npm ci
 
       - name: Run Playwright tests
-        working-directory: TesteAutomatizado
+        working-directory: api-lanches
         env:
           BASE_URL: ${{ secrets.BASE_URL }}
           CONTENTFUL_ACCESS_TOKEN: ${{ secrets.CONTENTFUL_ACCESS_TOKEN }}
@@ -36,5 +38,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: TesteAutomatizado/playwright-report/
+          path: api-lanches/playwright-report/
           retention-days: 30
