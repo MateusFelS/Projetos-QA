@@ -1,56 +1,248 @@
-# Plano de Teste - DemoBlaze
+# Plano de Testes
 
-## 1. Introdução
-O objetivo deste plano de teste é verificar se as funcionalidades de fluxo de compra da plataforma DemoBlaze funcionam como o esperado.
+## Informações Gerais
 
-## 2. Escopo
-Funcionalidades testadas:
-- **Fluxo de Autenticação** (cadastros válidos, inválidos e mensagens de erro)
-- **Fluxo de Compra** (adicionar item, remover item, carrinho vazio e mensagens de erro)
-- **Fluxo de Navegação** (erros de navegação/direcionamento)
-- **Validação de UI/UX** (erros de design e falta de acessibilidade)
+| Item        | Valor                       |
+| ----------- | --------------------------- |
+| Projeto     | QA Case Study - DemoBlaze   |
+| Módulo      | Fluxo de Compra e Navegação |
+| Responsável | Mateus Felipe dos Santos    |
+| Versão      | 1.0                         |
+| Data        | 03/09/2026                  |
 
-## 3. Tipos de Testes
-- **Testes funcionais**
-- **Testes não funcionais**
-- **Testes automatizados e manuais**
+---
 
-## 4. Critérios de Aceitação
-- O usuário deve conseguir concluir as compras sem erros
-- O usuário deve conseguir navegar sem problemas pelo site
-- As mensagens de erro devem ser claras e objetivas
+# Objetivo
 
-## 5. Ambientes e Ferramentas
-- **Ambiente:** Teste 
-- **Ferramentas usadas:** Playwright e Postman
+Avaliar o funcionamento do fluxo de compra da plataforma **DemoBlaze**, verificando comportamentos esperados, regras de negócio, validações, navegação e aspectos de UI/UX.
 
-## 6. Casos de Teste
+Também serão realizadas validações dos principais endpoints da aplicação, utilizando o **Postman**, além de testes automatizados com **Playwright** quando aplicável.
 
-| ID  | Cenário | Passos | Resultado Esperado |
-|-----|---------|--------|--------------------|
-| 1   | Login com cadastro válido | 1. Entrar na página inicial  <br> 2. Clicar no link "Log in" <br> 3. Digitar "username" e "password" existente <br> 4. Clicar no botão "Log in" | Mensagem "Welcome (nome do usuário)" aparece no canto superior direito. |
-| 2   | Login com cadastro inválido | 1. Entrar na página inicial <br> 2. Clicar no link "Log in" <br> 3. Digitar "username" e "password" inexistente <br> 4. Clicar no botão "Log in" | Mensagem de erro "User does not exist." aparece. |
-| 3   | Login com campos vazios | 1. Entrar na página inicial <br> 2. Clicar no link "Log in" <br> 3. Deixar os campos "username" e "password" vazios <br> 4. Clicar no botão "Log in" | Mensagem de erro "Please fill out Username and Password." aparece. |
-| 4   | Signup com cadastro válido | 1. Entrar na página inicial <br> 2. Clicar no link "Sign up" <br> 3. Digitar "username" e "password" <br> 4. Clicar no botão "Sign up" | Mensagem "Sign up successful." aparece. |
-| 5   | Signup com cadastro inválido (usuário já existe) | 1. Entrar na página inicial <br> 2. Clicar no link "Sign up" <br> 3. Digitar "username" já existente e qualquer senha <br> 4. Clicar no botão "Sign up" | Mensagem de erro "This user already exist." aparece. |
-| 6   | Adicionar item ao carrinho | 1. Entrar na página inicial <br> 2. Selecionar um produto <br> 3. Clicar no botão "Add to cart" | Mensagem "Product added" aparece e o item é adicionado ao carrinho. |
-| 7   | Remover item do carrinho | 1. Adicionar um item ao carrinho <br> 2. Ir até a página do carrinho <br> 3. Clicar no botão de remover | O item é removido do carrinho e a lista de produtos atualiza. |
-| 8   | Comprar item com sucesso | 1. Adicionar um item ao carrinho <br> 2. Ir até o carrinho <br> 3. Clicar no botão "Place Order" <br> 4. Preencher os dados de compra <br> 5. Confirmar a compra | Mensagem "Thank you for your purchase" aparece e o pedido é registrado. |
-| 9   | Carrinho vazio | 1. Acessar o carrinho sem adicionar nenhum item | Mensagem "Your cart is empty" aparece. |
-| 10  | Fluxo de navegação - Página de contato | 1. Clicar no link "Contact" <br> 2. Verificar se a página de contato é aberta corretamente | Página de contato carrega corretamente e é possível enviar uma mensagem. |
-| 11  | Fluxo de navegação - Página "Sobre nós" | 1. Clicar no link "About us" <br> 2. Verificar se a página de informações da loja carrega | Página "About us" abre corretamente com as informações da empresa. |
-| 12  | Fluxo de navegação - Página do carrinho | 1. Clicar no ícone do carrinho na barra superior <br> 2. Verificar se a página do carrinho abre corretamente | Página do carrinho abre corretamente. |
-| 13  | Filtro de itens                   | 1. Escolher uma categoria no filtro de produtos <br> 2. Verificar se o filtro selecionou os produtos corretamente                              | Apenas os itens da categoria selecionada devem aparecer na listagem.           |
-| 14  | UI/UX - Responsividade | 1. Acessar o site em diferentes dispositivos (mobile, tablet e desktop) <br> 2. Verificar se os elementos se ajustam corretamente | O layout do site se adapta bem a diferentes tamanhos de tela. |
-| 15  | UI/UX - Acessibilidade | 1. Verificar se os botões possuem descrições alternativas <br> 2. Testar a navegação apenas com o teclado | O site é acessível e pode ser navegado sem o uso do mouse. |
+---
 
-## 7. Gerenciamento de Defeitos (Bugs)
-- **Plataforma utilizada:** Github
-- **Critérios de Prioridade:**
-  - **Alta:** Erros críticos que impedem a compra ou login.
-  - **Média:** Problemas de navegação ou UI que dificultam o uso do site.
-  - **Baixa:** Pequenos bugs visuais ou de acessibilidade.
+# Escopo
 
-## 8. Riscos e Dependências
-- **Possíveis problemas no teste:** ambiente instável, falhas na API de autenticação ou no banco de dados.
-- **Dependências:** Servidor da DemoBlaze funcionando corretamente.
+## Funcionalidades contempladas
+
+* Cadastro de usuário
+* Login
+* Validação de credenciais
+* Validação de campos obrigatórios
+* Mensagens de erro e feedback ao usuário
+* Adição de produtos ao carrinho
+* Remoção de produtos do carrinho
+* Consulta do carrinho
+* Comportamento do carrinho vazio
+* Finalização da compra
+* Navegação entre páginas
+* Filtro por categoria
+* Responsividade
+* Aspectos básicos de acessibilidade
+* Testes de API relacionados à autenticação, produtos e carrinho
+
+## Fora do escopo
+
+* Testes de performance
+* Testes de segurança
+* Testes de carga e estresse
+* Integrações com serviços externos
+* Processamento real de pagamentos
+* Testes de infraestrutura
+* Testes em dispositivos físicos além dos utilizados durante a execução
+
+---
+
+# Estratégia de Testes
+
+Serão utilizados os seguintes tipos de teste:
+
+* Testes Funcionais
+* Testes Exploratórios
+* Testes de Validação de Campos
+* Testes de Navegação
+* Testes de Usabilidade
+* Testes de Responsividade
+* Testes de Acessibilidade
+* Testes de API
+* Testes Manuais
+* Testes Automatizados
+
+Os testes serão executados considerando os principais fluxos da aplicação, priorizando funcionalidades diretamente relacionadas à autenticação, compra e navegação.
+
+Os testes de API serão realizados utilizando o **Postman**, enquanto os testes automatizados serão executados utilizando o **Playwright**.
+
+---
+
+# Ambiente
+
+| Item                | Valor                |
+| ------------------- | -------------------- |
+| Aplicação           | DemoBlaze            |
+| Ambiente            | Ambiente de teste    |
+| Sistema Operacional | Windows 11           |
+| Navegadores         | Chrome e Brave       |
+| Dispositivo Mobile  | Xiaomi Redmi 9A      |
+| Sistema Mobile      | Android 10           |
+| Ferramentas         | Playwright e Postman |
+
+---
+
+# Critérios de Entrada
+
+* Aplicação DemoBlaze disponível para acesso.
+* Servidor da aplicação funcionando corretamente.
+* Conexão com a internet disponível.
+* Usuário de teste disponível para execução dos cenários que exigem autenticação.
+* Ambiente configurado para execução dos testes automatizados.
+* Postman disponível para execução dos testes de API.
+
+---
+
+# Critérios de Saída
+
+A execução dos testes será considerada concluída quando:
+
+* Todos os casos de teste planejados forem executados.
+* Os resultados dos testes forem registrados.
+* Os defeitos encontrados forem documentados.
+* As evidências dos principais cenários e defeitos forem anexadas.
+* Os testes de API previstos forem executados.
+* Os testes automatizados planejados forem executados.
+
+---
+
+# Critérios de Aceitação
+
+A aplicação será considerada aprovada para os cenários testados quando:
+
+* O usuário conseguir realizar cadastro e login conforme esperado.
+* O usuário conseguir adicionar e remover produtos do carrinho.
+* O usuário conseguir concluir o fluxo de compra.
+* O carrinho apresentar comportamento adequado quando estiver vazio.
+* As páginas principais puderem ser acessadas corretamente.
+* Os filtros de produtos funcionarem conforme esperado.
+* As mensagens de erro e feedback forem apresentadas de forma adequada.
+* A interface apresentar comportamento adequado nos dispositivos e tamanhos de tela testados.
+
+---
+
+# Critérios de Priorização
+
+Os testes serão executados seguindo a ordem:
+
+1. Autenticação
+2. Fluxo principal de compra
+3. Gerenciamento do carrinho
+4. Validações e cenários negativos
+5. Navegação
+6. Filtros de produtos
+7. Responsividade
+8. Acessibilidade
+9. Testes de API
+10. Testes automatizados
+
+---
+
+# Casos de Teste
+
+| ID     | Cenário                         | Resultado Esperado                                                                                                                   |
+| ------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| CT-001 | Login com cadastro válido       | O usuário deve ser autenticado e a mensagem de boas-vindas deve ser exibida.                                                         |
+| CT-002 | Login com cadastro inválido     | A aplicação deve informar que o usuário não existe.                                                                                  |
+| CT-003 | Login com campos vazios         | A aplicação deve informar que usuário e senha precisam ser preenchidos.                                                              |
+| CT-004 | Signup com cadastro válido      | O cadastro deve ser realizado com sucesso e uma mensagem de confirmação deve ser exibida.                                            |
+| CT-005 | Signup com usuário já existente | A aplicação deve informar que o usuário já existe.                                                                                   |
+| CT-006 | Adicionar item ao carrinho      | O produto deve ser adicionado ao carrinho e uma mensagem de confirmação deve ser exibida.                                            |
+| CT-007 | Remover item do carrinho        | O produto deve ser removido e a lista do carrinho deve ser atualizada.                                                               |
+| CT-008 | Comprar item com sucesso        | A compra deve ser concluída e uma mensagem de confirmação deve ser exibida.                                                          |
+| CT-009 | Acessar carrinho vazio          | O sistema deve informar que o carrinho está vazio.                                                                                   |
+| CT-010 | Acessar página de contato       | A página de contato deve ser carregada corretamente e permitir o envio de uma mensagem.                                              |
+| CT-011 | Acessar página "About us"       | A página deve ser carregada corretamente com as informações da empresa.                                                              |
+| CT-012 | Acessar página do carrinho      | A página do carrinho deve ser aberta corretamente.                                                                                   |
+| CT-013 | Filtrar produtos por categoria  | Somente produtos pertencentes à categoria selecionada devem ser exibidos.                                                            |
+| CT-014 | Responsividade                  | Os elementos da interface devem se adaptar adequadamente aos diferentes tamanhos de tela testados.                                   |
+| CT-015 | Acessibilidade                  | Os principais elementos devem possuir identificação adequada e a navegação deve ser possível utilizando o teclado, quando aplicável. |
+
+---
+
+# Testes de API
+
+Foram realizados testes manuais utilizando o **Postman** para validação dos principais endpoints da aplicação.
+
+## Autenticação
+
+| Método | Endpoint  | Cenário             |
+| ------ | --------- | ------------------- |
+| POST   | `/login`  | Realização de login |
+| POST   | `/signup` | Cadastro de usuário |
+
+## Produtos
+
+| Método | Endpoint   | Cenário                       |
+| ------ | ---------- | ----------------------------- |
+| GET    | `/entries` | Consulta da lista de produtos |
+
+## Carrinho
+
+| Método | Endpoint      | Cenário                        |
+| ------ | ------------- | ------------------------------ |
+| POST   | `/addtocart`  | Adição de produto ao carrinho  |
+| GET    | `/viewcart`   | Consulta dos itens do carrinho |
+| DELETE | `/deletecart` | Remoção de produto do carrinho |
+
+Os testes de API contemplaram a validação das requisições, respostas retornadas e comportamento dos endpoints nos cenários executados.
+
+---
+
+# Gerenciamento de Defeitos
+
+* **Plataforma utilizada:** GitHub
+* **Documentação:** Relatórios de bugs contendo descrição, passos para reprodução, resultado esperado, resultado obtido, impacto, severidade, prioridade e evidências.
+
+## Critérios de Severidade
+
+* **Alta:** Problemas que impedem ou comprometem funcionalidades importantes, como login ou conclusão da compra.
+* **Média:** Problemas que dificultam a utilização ou navegação, mas não impedem completamente o fluxo principal.
+* **Baixa:** Problemas visuais, de usabilidade ou acessibilidade com baixo impacto funcional.
+
+## Critérios de Prioridade
+
+* **Alta:** Correção necessária devido ao impacto significativo na experiência ou no funcionamento da aplicação.
+* **Média:** Correção recomendada, mas sem bloqueio do fluxo principal.
+* **Baixa:** Correção de menor impacto, podendo ser realizada posteriormente.
+
+---
+
+# Riscos
+
+| Risco                              | Impacto | Prioridade |
+| ---------------------------------- | ------- | ---------- |
+| Indisponibilidade da aplicação     | Alto    | Alta       |
+| Falha no serviço de autenticação   | Alto    | Alta       |
+| Falha no gerenciamento do carrinho | Alto    | Alta       |
+| Falha na finalização da compra     | Alto    | Alta       |
+| Problemas de navegação             | Médio   | Média      |
+| Problemas de responsividade        | Médio   | Média      |
+| Problemas de acessibilidade        | Médio   | Média      |
+| Instabilidade dos endpoints da API | Alto    | Alta       |
+
+---
+
+# Dependências
+
+* Disponibilidade do ambiente DemoBlaze.
+* Funcionamento dos serviços responsáveis pela autenticação.
+* Disponibilidade dos endpoints da API.
+* Conexão com a internet.
+* Funcionamento do ambiente utilizado para execução dos testes automatizados.
+
+---
+
+# Entregáveis
+
+* Plano de Testes
+* Casos de Teste
+* Testes Automatizados com Playwright
+* Testes de API realizados no Postman
+* Relatórios de Bugs
+* Evidências dos testes executados
