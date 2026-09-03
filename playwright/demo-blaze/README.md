@@ -1,15 +1,15 @@
-# 🧪 Projeto de Testes - DemoBlaze  
+# Projeto de Testes - DemoBlaze  
 
-## 📌 Introdução  
+## Introdução  
 Este projeto tem como objetivo testar o fluxo de compra da plataforma **DemoBlaze**, garantindo que suas funcionalidades essenciais estejam funcionando corretamente.  
 
 Os testes incluem **testes manuais e automatizados**, utilizando **Playwright** para automação e **Postman** para testes de API.  
 
 ---
 
-## 📝 Sobre os Testes
+## Sobre os Testes
 
-### 🎯 Escopo  
+### Escopo  
 As seguintes funcionalidades foram testadas:  
 
 - **Fluxo de Autenticação**: Cadastros válidos, inválidos e mensagens de erro.  
@@ -17,32 +17,32 @@ As seguintes funcionalidades foram testadas:
 - **Fluxo de Navegação**: Erros de direcionamento e navegação.  
 - **Validação UI/UX**: Erros de design e problemas de acessibilidade.  
 
-### ✅ Critérios de Aceitação  
+### Critérios de Aceitação  
 - O usuário deve conseguir concluir as compras sem erros.  
 - O usuário deve conseguir navegar sem problemas pelo site.  
 - As mensagens de erro devem ser claras e objetivas.  
 
-### 🛠️ Ambientes e Ferramentas  
+### Ambientes e Ferramentas  
 - **Ambiente de Teste**: Produção.  
 - **Ferramentas Utilizadas**: Playwright, Postman e Github (para documentação e reporte de bugs).  
 
 ---
 
-## 🚀 Automação de Testes  
+## Automação de Testes  
 
 A automação foi realizada utilizando **Playwright**, garantindo a execução dos principais fluxos automaticamente.  
 
-### 📌 Tecnologias Utilizadas  
+### Tecnologias Utilizadas  
 - **Linguagem**: TypeScript  
 - **Framework de Teste**: Playwright  
 
 ---
 
-## 🧑‍💻 Testes de API  
+## Testes de API  
 
 Os testes de API foram realizados utilizando **Postman** para validar os endpoints do DemoBlaze. Abaixo estão os principais testes realizados:  
 
-### 📌 Endpoints Testados  
+### Endpoints Testados  
 
 1. **Login**  
    - **Endpoint**: `POST /login`  
@@ -82,7 +82,7 @@ Os testes de API foram realizados utilizando **Postman** para validar os endpoin
 
 ---
 
-## 📌 Conclusão
-Este projeto garante a qualidade do DemoBlaze, identificando erros e automatizando os testes dos principais fluxos. 🚀
+## Conclusão
+Este projeto garante a qualidade do DemoBlaze, identificando erros e automatizando os testes dos principais fluxos.
 
 Se você quiser contribuir, sinta-se à vontade para abrir um Pull Request ou reportar um Issue!
