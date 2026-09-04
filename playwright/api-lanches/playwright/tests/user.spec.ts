@@ -1,166 +1,100 @@
 import { test, expect } from '@playwright/test';
+import { ContentfulClient } from '../helpers/contentful-client';
+import { BASE_URL, ACCESS_TOKEN, LOCALE, CONTENT_TYPES } from '../helpers/config';
+import type { ContentfulEntriesResponse, UserFields } from '../helpers/contentful.types';
 
-// Configurações
-const baseUrl = process.env.BASE_URL!;
-const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN!;
-const locale = 'en-US';
-const contentType = 'user';
+let client: ContentfulClient;
 
-// Helpers
-const getAuthHeaders = () => ({
-  Authorization: `Bearer ${accessToken}`,
+test.beforeEach(({ request }) => {
+  client = new ContentfulClient(request, BASE_URL, ACCESS_TOKEN);
 });
-
-const getContentHeaders = (contentType: string) => ({
-  ...getAuthHeaders(),
-  'Content-Type': 'application/vnd.contentful.management.v1+json',
-  'X-Contentful-Content-Type': contentType,
-});
-
-const publishEntry = async (request: any, entryId: string, version: number) => {
-  const res = await request.put(`${baseUrl}/entries/${entryId}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': String(version),
-    },
-  });
-  expect(res.status()).toBe(200);
-};
-
-const deleteEntry = async (request: any, entryId: string) => {
-  // Despublicar
-  await request.delete(`${baseUrl}/entries/${entryId}/published`, {
-    headers: getAuthHeaders(),
-  });
-
-  // Deletar
-  const res = await request.delete(`${baseUrl}/entries/${entryId}`, {
-    headers: getAuthHeaders(),
-  });
-
-  expect(res.status()).toBe(204);
-};
 
 // ============================================================
 // TESTE POSITIVO - CRUD completo
 // ============================================================
-test('User CRUD', async ({ request }) => {
-  const newUser = {
-    fields: {
-      name: { [locale]: 'Teste' },
-      email: { [locale]: 'teste@gmail.com' },
-      phone: { [locale]: '1412321313' },
-      address: { [locale]: 'Rua Teste' },
-    },
+test('User CRUD', async () => {
+  const newUser: UserFields = {
+    name: { [LOCALE]: 'Teste' },
+    email: { [LOCALE]: 'teste@gmail.com' },
+    phone: { [LOCALE]: '1412321313' },
+    address: { [LOCALE]: 'Rua Teste' },
   };
 
-  const createRes = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(contentType),
-    data: newUser,
-  });
-
+  const createRes = await client.createEntry(CONTENT_TYPES.USER, newUser);
   expect(createRes.status()).toBe(201);
   const created = await createRes.json();
   const entryId = created.sys.id;
 
-  await publishEntry(request, entryId, created.sys.version);
+  await client.publishEntry(entryId, created.sys.version);
 
-  const getRes = await request.get(`${baseUrl}/entries?content_type=${contentType}`, {
-    headers: getAuthHeaders(),
-  });
-
+  const getRes = await client.listEntries(CONTENT_TYPES.USER);
   expect(getRes.status()).toBe(200);
-  const data = await getRes.json();
+  const data: ContentfulEntriesResponse<UserFields> = await getRes.json();
 
-  const found = data.items.find((item: any) => {
+  const found = data.items.find((item) => {
     const fields = item.fields;
     return (
-      fields.name?.[locale] === 'Teste' &&
-      fields.email?.[locale] === 'teste@gmail.com' &&
-      fields.phone?.[locale] === '1412321313' &&
-      fields.address?.[locale] === 'Rua Teste'
+      fields.name?.[LOCALE] === 'Teste' &&
+      fields.email?.[LOCALE] === 'teste@gmail.com' &&
+      fields.phone?.[LOCALE] === '1412321313' &&
+      fields.address?.[LOCALE] === 'Rua Teste'
     );
   });
 
   expect(found).toBeTruthy();
 
-  await deleteEntry(request, entryId);
+  await client.cleanupEntry(entryId);
 });
 
 // ============================================================
 // TESTES NEGATIVOS
 // ============================================================
 
-
 // 2. Tipo de campo incorreto
-test('Não deve permitir criar usuário com tipo de campo incorreto', async ({ request }) => {
+test('Não deve permitir criar usuário com tipo de campo incorreto', async () => {
   const invalidUser = {
-    fields: {
-      name: { [locale]: 12345 }, // deve ser string
-      email: { [locale]: 'teste@teste.com' },
-      phone: { [locale]: '999999999' },
-      address: { [locale]: 'Rua Qualquer' },
-    },
+    name: { [LOCALE]: 12345 }, // deve ser string
+    email: { [LOCALE]: 'teste@teste.com' },
+    phone: { [LOCALE]: '999999999' },
+    address: { [LOCALE]: 'Rua Qualquer' },
   };
 
-  const res = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(contentType),
-    data: invalidUser,
-  });
-
+  const res = await client.createEntry(CONTENT_TYPES.USER, invalidUser);
   expect(res.status()).not.toBe(201);
 });
 
 // 3. Publicação com versão incorreta
-test('Não deve permitir publicar usuário com versão incorreta', async ({ request }) => {
-  const user = {
-    fields: {
-      name: { [locale]: 'Usuário Versão Errada' },
-      email: { [locale]: 'teste@errado.com' },
-      phone: { [locale]: '1412321313' },
-      address: { [locale]: 'Rua Errada' },
-    },
+test('Não deve permitir publicar usuário com versão incorreta', async () => {
+  const user: UserFields = {
+    name: { [LOCALE]: 'Usuário Versão Errada' },
+    email: { [LOCALE]: 'teste@errado.com' },
+    phone: { [LOCALE]: '1412321313' },
+    address: { [LOCALE]: 'Rua Errada' },
   };
 
-  const createRes = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(contentType),
-    data: user,
-  });
-
+  const createRes = await client.createEntry(CONTENT_TYPES.USER, user);
   expect(createRes.status()).toBe(201);
   const created = await createRes.json();
   const entryId = created.sys.id;
 
-  const publishRes = await request.put(`${baseUrl}/entries/${entryId}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': '0', // versão errada
-    },
-  });
-
+  const publishRes = await client.tryPublishEntry(entryId, 0);
   expect(publishRes.status()).not.toBe(200);
 
-  await deleteEntry(request, entryId);
+  await client.cleanupEntry(entryId);
 });
 
 // 4. Deletar entrada inexistente
-test('Não deve deletar entrada inexistente', async ({ request }) => {
+test('Não deve deletar entrada inexistente', async () => {
   const fakeId = 'fake-entry-id';
 
-  const deleteRes = await request.delete(`${baseUrl}/entries/${fakeId}`, {
-    headers: getAuthHeaders(),
-  });
-
+  const deleteRes = await client.deleteEntry(fakeId);
   expect([400, 404]).toContain(deleteRes.status());
 });
 
 // 5. Token inválido
 test('Não deve acessar a API com token inválido', async ({ request }) => {
-  const res = await request.get(`${baseUrl}/entries?content_type=${contentType}`, {
-    headers: {
-      Authorization: 'Bearer token_invalido',
-    },
-  });
+  const invalidClient = new ContentfulClient(request, BASE_URL, 'token_invalido');
 
+  const res = await invalidClient.listEntries(CONTENT_TYPES.USER);
   expect(res.status()).toBe(401); // Unauthorized
 });

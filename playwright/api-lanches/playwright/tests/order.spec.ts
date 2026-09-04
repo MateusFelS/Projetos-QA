@@ -1,103 +1,49 @@
 import { test, expect } from '@playwright/test';
-
-// Configurações
-const baseUrl = process.env.BASE_URL!;
-const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN!;
-const locale = 'en-US';
-
-const orderContentType = 'pedido';
+import { ContentfulClient } from '../helpers/contentful-client';
+import { BASE_URL, ACCESS_TOKEN, LOCALE, CONTENT_TYPES } from '../helpers/config';
+import { toEntryLink } from '../helpers/contentful.types';
+import type { ContentfulEntriesResponse, OrderFields } from '../helpers/contentful.types';
 
 // IDs reais existentes (exemplo)
-const existingUserId = '7IRpgdQxvFPUpdZ7zZk1RO';
-const existingProductId = '46ss7QLmhEyyTCImBc4Vog';
+const EXISTING_USER_ID = '7IRpgdQxvFPUpdZ7zZk1RO';
+const EXISTING_PRODUCT_ID = '46ss7QLmhEyyTCImBc4Vog';
 
-// Helpers
-const getAuthHeaders = () => ({
-  Authorization: `Bearer ${accessToken}`,
+let client: ContentfulClient;
+
+test.beforeEach(({ request }) => {
+  client = new ContentfulClient(request, BASE_URL, ACCESS_TOKEN);
 });
-
-const getContentHeaders = (contentType: string) => ({
-  ...getAuthHeaders(),
-  'Content-Type': 'application/vnd.contentful.management.v1+json',
-  'X-Contentful-Content-Type': contentType,
-});
-
-const publishEntry = async (request: any, entryId: string, version: number) => {
-  const res = await request.put(`${baseUrl}/entries/${entryId}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': String(version),
-    },
-  });
-  expect(res.status()).toBe(200);
-};
-
-const deleteEntry = async (request: any, entryId: string) => {
-  await request.delete(`${baseUrl}/entries/${entryId}/published`, {
-    headers: getAuthHeaders(),
-  });
-
-  await request.delete(`${baseUrl}/entries/${entryId}`, {
-    headers: getAuthHeaders(),
-  });
-};
 
 // ======================================================
 // TESTE POSITIVO - CRUD do Pedido
 // ======================================================
-test('Order CRUD', async ({ request }) => {
-  const orderData = {
-    fields: {
-      customerName: { [locale]: 'Cliente Exemplo' },
-      totalPrice: { [locale]: 49.99 },
-      status: { [locale]: 'Pendente' },
-      orderType: { [locale]: 'Pix' },
-      items: {
-        [locale]: {
-          sys: {
-            type: 'Link',
-            linkType: 'Entry',
-            id: existingProductId,
-          },
-        },
-      },
-      user: {
-        [locale]: {
-          sys: {
-            type: 'Link',
-            linkType: 'Entry',
-            id: existingUserId,
-          },
-        },
-      },
-    },
+test('Order CRUD', async () => {
+  const orderData: OrderFields = {
+    customerName: { [LOCALE]: 'Cliente Exemplo' },
+    totalPrice: { [LOCALE]: 49.99 },
+    status: { [LOCALE]: 'Pendente' },
+    orderType: { [LOCALE]: 'Pix' },
+    items: { [LOCALE]: toEntryLink(EXISTING_PRODUCT_ID) },
+    user: { [LOCALE]: toEntryLink(EXISTING_USER_ID) },
   };
 
-  const orderRes = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(orderContentType),
-    data: orderData,
-  });
-
+  const orderRes = await client.createEntry(CONTENT_TYPES.PEDIDO, orderData);
   expect(orderRes.status()).toBe(201);
   const createdOrder = await orderRes.json();
   const orderId = createdOrder.sys.id;
 
-  await publishEntry(request, orderId, createdOrder.sys.version);
+  await client.publishEntry(orderId, createdOrder.sys.version);
 
-  const getOrderRes = await request.get(`${baseUrl}/entries?content_type=${orderContentType}`, {
-    headers: getAuthHeaders(),
-  });
-
+  const getOrderRes = await client.listEntries(CONTENT_TYPES.PEDIDO);
   expect(getOrderRes.status()).toBe(200);
-  const ordersData = await getOrderRes.json();
+  const ordersData: ContentfulEntriesResponse<OrderFields> = await getOrderRes.json();
 
   const foundOrder = ordersData.items.find(
-    (item: any) => item.fields.customerName?.[locale] === 'Cliente Exemplo'
+    (item) => item.fields.customerName?.[LOCALE] === 'Cliente Exemplo',
   );
-
   expect(foundOrder).toBeTruthy();
 
-  await deleteEntry(request, orderId);
+  await client.cleanupEntry(orderId);
 });
 
 // ======================================================
@@ -105,62 +51,41 @@ test('Order CRUD', async ({ request }) => {
 // ======================================================
 
 // 1. Campo totalPrice com valor inválido (string)
-test('Não deve permitir criar pedido com totalPrice inválido', async ({ request }) => {
+test('Não deve permitir criar pedido com totalPrice inválido', async () => {
   const invalidOrder = {
-    fields: {
-      customerName: { [locale]: 'Cliente Erro Tipo' },
-      totalPrice: { [locale]: 'quarenta' }, // string em vez de número
-      status: { [locale]: 'Pendente' },
-      orderType: { [locale]: 'Cartão' },
-    },
+    customerName: { [LOCALE]: 'Cliente Erro Tipo' },
+    totalPrice: { [LOCALE]: 'quarenta' }, // string em vez de número
+    status: { [LOCALE]: 'Pendente' },
+    orderType: { [LOCALE]: 'Cartão' },
   };
 
-  const res = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(orderContentType),
-    data: invalidOrder,
-  });
-
+  const res = await client.createEntry(CONTENT_TYPES.PEDIDO, invalidOrder);
   expect(res.status()).not.toBe(201);
 });
 
 // 3. Publicação com versão incorreta
-test('Não deve permitir publicar pedido com versão incorreta', async ({ request }) => {
-  const orderData = {
-    fields: {
-      customerName: { [locale]: 'Versão Errada' },
-      totalPrice: { [locale]: 59.99 },
-      status: { [locale]: 'Pendente' },
-      orderType: { [locale]: 'Crédito' },
-    },
+test('Não deve permitir publicar pedido com versão incorreta', async () => {
+  const orderData: OrderFields = {
+    customerName: { [LOCALE]: 'Versão Errada' },
+    totalPrice: { [LOCALE]: 59.99 },
+    status: { [LOCALE]: 'Pendente' },
+    orderType: { [LOCALE]: 'Crédito' },
   };
 
-  const res = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(orderContentType),
-    data: orderData,
-  });
-
+  const res = await client.createEntry(CONTENT_TYPES.PEDIDO, orderData);
   expect(res.status()).toBe(201);
   const created = await res.json();
 
-  const pubRes = await request.put(`${baseUrl}/entries/${created.sys.id}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': '0', // versão errada
-    },
-  });
-
+  const pubRes = await client.tryPublishEntry(created.sys.id, 0);
   expect(pubRes.status()).not.toBe(200);
 
-  await deleteEntry(request, created.sys.id);
+  await client.cleanupEntry(created.sys.id);
 });
 
 // 4. Tentativa de acessar a API com token inválido
 test('Não deve acessar a API com token inválido', async ({ request }) => {
-  const res = await request.get(`${baseUrl}/entries?content_type=${orderContentType}`, {
-    headers: {
-      Authorization: 'Bearer token_invalido',
-    },
-  });
+  const invalidClient = new ContentfulClient(request, BASE_URL, 'token_invalido');
 
+  const res = await invalidClient.listEntries(CONTENT_TYPES.PEDIDO);
   expect(res.status()).toBe(401);
 });

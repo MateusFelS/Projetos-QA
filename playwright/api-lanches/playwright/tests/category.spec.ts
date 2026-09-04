@@ -1,94 +1,45 @@
 import { test, expect } from '@playwright/test';
+import { ContentfulClient } from '../helpers/contentful-client';
+import { BASE_URL, ACCESS_TOKEN, LOCALE, CONTENT_TYPES } from '../helpers/config';
+import type { CategoryFields, ContentfulEntriesResponse } from '../helpers/contentful.types';
 
-// Configurações
-const baseUrl = process.env.BASE_URL!;
-const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN!;
-const locale = 'en-US';
-const contentType = 'categoria';
+let client: ContentfulClient;
 
-// Helpers
-const getAuthHeaders = () => ({
-  Authorization: `Bearer ${accessToken}`,
+test.beforeEach(({ request }) => {
+  client = new ContentfulClient(request, BASE_URL, ACCESS_TOKEN);
 });
-
-const getContentHeaders = (contentType: string) => ({
-  ...getAuthHeaders(),
-  'Content-Type': 'application/vnd.contentful.management.v1+json',
-  'X-Contentful-Content-Type': contentType,
-});
-
-const publishEntry = async (request: any, entryId: string, version: number) => {
-  const res = await request.put(`${baseUrl}/entries/${entryId}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': String(version),
-    },
-  });
-  expect(res.status()).toBe(200);
-};
-
-const deleteEntry = async (request: any, entryId: string) => {
-  // Verifica se está publicado antes de tentar despublicar
-  const getRes = await request.get(`${baseUrl}/entries/${entryId}`, {
-    headers: getAuthHeaders(),
-  });
-  const entry = await getRes.json();
-
-  const isPublished = !!entry.sys.publishedVersion;
-
-  if (isPublished) {
-    const unpublishRes = await request.delete(`${baseUrl}/entries/${entryId}/published`, {
-      headers: getAuthHeaders(),
-    });
-    expect(unpublishRes.status()).toBe(200);
-  }
-
-  const deleteRes = await request.delete(`${baseUrl}/entries/${entryId}`, {
-    headers: getAuthHeaders(),
-  });
-  expect(deleteRes.status()).toBe(204);
-};
 
 // ======================================================
 // TESTE POSITIVO - CRUD de Categoria
 // ======================================================
-test('Category CRUD', async ({ request }) => {
-  const newCategory = {
-    fields: {
-      name: { [locale]: 'Categoria Teste' },
-      slug: { [locale]: 'categoria-teste' },
-    },
+test('Category CRUD', async () => {
+  const newCategory: CategoryFields = {
+    name: { [LOCALE]: 'Categoria Teste' },
+    slug: { [LOCALE]: 'categoria-teste' },
   };
 
-  const createRes = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(contentType),
-    data: newCategory,
-  });
-
+  const createRes = await client.createEntry(CONTENT_TYPES.CATEGORIA, newCategory);
   expect(createRes.status()).toBe(201);
   const created = await createRes.json();
   const entryId = created.sys.id;
 
-  await publishEntry(request, entryId, created.sys.version);
+  await client.publishEntry(entryId, created.sys.version);
 
-  const getRes = await request.get(`${baseUrl}/entries?content_type=${contentType}`, {
-    headers: getAuthHeaders(),
-  });
-
+  const getRes = await client.listEntries(CONTENT_TYPES.CATEGORIA);
   expect(getRes.status()).toBe(200);
-  const data = await getRes.json();
+  const data: ContentfulEntriesResponse<CategoryFields> = await getRes.json();
 
-  const found = data.items.find((item: any) => {
+  const found = data.items.find((item) => {
     const fields = item.fields;
     return (
-      fields.name?.[locale] === 'Categoria Teste' &&
-      fields.slug?.[locale] === 'categoria-teste'
+      fields.name?.[LOCALE] === 'Categoria Teste' &&
+      fields.slug?.[LOCALE] === 'categoria-teste'
     );
   });
 
   expect(found).toBeTruthy();
 
-  await deleteEntry(request, entryId);
+  await client.cleanupEntry(entryId);
 });
 
 // ======================================================
@@ -96,43 +47,28 @@ test('Category CRUD', async ({ request }) => {
 // ======================================================
 
 // 1. Publicação com versão incorreta
-test('Não deve permitir publicar categoria com versão incorreta', async ({ request }) => {
-  const category = {
-    fields: {
-      name: { [locale]: 'Categoria Versão Errada' },
-      slug: { [locale]: 'categoria-versao-errada' },
-    },
+test('Não deve permitir publicar categoria com versão incorreta', async () => {
+  const category: CategoryFields = {
+    name: { [LOCALE]: 'Categoria Versão Errada' },
+    slug: { [LOCALE]: 'categoria-versao-errada' },
   };
 
-  const res = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(contentType),
-    data: category,
-  });
-
+  const res = await client.createEntry(CONTENT_TYPES.CATEGORIA, category);
   expect(res.status()).toBe(201);
   const created = await res.json();
   const entryId = created.sys.id;
 
   // Publicar com versão errada
-  const pubRes = await request.put(`${baseUrl}/entries/${entryId}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': '0',
-    },
-  });
-
+  const pubRes = await client.tryPublishEntry(entryId, 0);
   expect(pubRes.status()).not.toBe(200);
 
-  await deleteEntry(request, entryId);
+  await client.cleanupEntry(entryId);
 });
 
 // 2. Acesso com token inválido
 test('Não deve acessar API com token inválido', async ({ request }) => {
-  const res = await request.get(`${baseUrl}/entries?content_type=${contentType}`, {
-    headers: {
-      Authorization: 'Bearer token_invalido',
-    },
-  });
+  const invalidClient = new ContentfulClient(request, BASE_URL, 'token_invalido');
 
+  const res = await invalidClient.listEntries(CONTENT_TYPES.CATEGORIA);
   expect(res.status()).toBe(401);
 });

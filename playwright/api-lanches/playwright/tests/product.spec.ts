@@ -1,115 +1,64 @@
 import { test, expect } from '@playwright/test';
+import { ContentfulClient } from '../helpers/contentful-client';
+import { BASE_URL, ACCESS_TOKEN, LOCALE, CONTENT_TYPES } from '../helpers/config';
+import { toEntryLink } from '../helpers/contentful.types';
+import type { CategoryFields, ContentfulEntriesResponse, ProductFields } from '../helpers/contentful.types';
 
-// Configurações
-const baseUrl = process.env.BASE_URL!;
-const accessToken = process.env.CONTENTFUL_ACCESS_TOKEN!;
-const locale = 'en-US';
+let client: ContentfulClient;
 
-const productContentType = 'produto';
-const categoryContentType = 'categoria';
-
-// Helpers
-const getAuthHeaders = () => ({
-  Authorization: `Bearer ${accessToken}`,
+test.beforeEach(({ request }) => {
+  client = new ContentfulClient(request, BASE_URL, ACCESS_TOKEN);
 });
-
-const getContentHeaders = (contentType: string) => ({
-  ...getAuthHeaders(),
-  'Content-Type': 'application/vnd.contentful.management.v1+json',
-  'X-Contentful-Content-Type': contentType,
-});
-
-const publishEntry = async (request: any, entryId: string, version: number) => {
-  const res = await request.put(`${baseUrl}/entries/${entryId}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': String(version),
-    },
-  });
-  expect(res.status()).toBe(200);
-};
-
-const deleteEntry = async (request: any, entryId: string) => {
-  await request.delete(`${baseUrl}/entries/${entryId}/published`, {
-    headers: getAuthHeaders(),
-  });
-  await request.delete(`${baseUrl}/entries/${entryId}`, {
-    headers: getAuthHeaders(),
-  });
-};
 
 // =====================================================================
 // TESTE POSITIVO - CRUD de produto e categoria
 // =====================================================================
-test('Product CRUD', async ({ request }) => {
-  const categoryData = {
-    fields: {
-      name: { [locale]: 'Categoria Produto' },
-      slug: { [locale]: 'categoria-produto' },
-    },
+test('Product CRUD', async () => {
+  const categoryData: CategoryFields = {
+    name: { [LOCALE]: 'Categoria Produto' },
+    slug: { [LOCALE]: 'categoria-produto' },
   };
 
-  const categoryRes = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(categoryContentType),
-    data: categoryData,
-  });
-
+  const categoryRes = await client.createEntry(CONTENT_TYPES.CATEGORIA, categoryData);
   expect(categoryRes.status()).toBe(201);
   const createdCategory = await categoryRes.json();
   const categoryId = createdCategory.sys.id;
 
-  await publishEntry(request, categoryId, createdCategory.sys.version);
+  await client.publishEntry(categoryId, createdCategory.sys.version);
 
-  const productData = {
-    fields: {
-      name: { [locale]: 'Produto Teste' },
-      slug: { [locale]: 'produto-teste' },
-      description: { [locale]: 'Este é um produto de teste.' },
-      price: { [locale]: 99.99 },
-      available: { [locale]: true },
-      ingredients: { [locale]: ['Ingrediente A', 'Ingrediente B'] },
-      category: {
-        [locale]: {
-          sys: {
-            type: 'Link',
-            linkType: 'Entry',
-            id: categoryId,
-          },
-        },
-      },
-    },
+  const productData: ProductFields = {
+    name: { [LOCALE]: 'Produto Teste' },
+    slug: { [LOCALE]: 'produto-teste' },
+    description: { [LOCALE]: 'Este é um produto de teste.' },
+    price: { [LOCALE]: 99.99 },
+    available: { [LOCALE]: true },
+    ingredients: { [LOCALE]: ['Ingrediente A', 'Ingrediente B'] },
+    category: { [LOCALE]: toEntryLink(categoryId) },
   };
 
-  const productRes = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(productContentType),
-    data: productData,
-  });
-
+  const productRes = await client.createEntry(CONTENT_TYPES.PRODUTO, productData);
   expect(productRes.status()).toBe(201);
   const createdProduct = await productRes.json();
   const productId = createdProduct.sys.id;
 
-  await publishEntry(request, productId, createdProduct.sys.version);
+  await client.publishEntry(productId, createdProduct.sys.version);
 
-  const getRes = await request.get(`${baseUrl}/entries?content_type=${productContentType}`, {
-    headers: getAuthHeaders(),
-  });
-
+  const getRes = await client.listEntries(CONTENT_TYPES.PRODUTO);
   expect(getRes.status()).toBe(200);
-  const data = await getRes.json();
+  const data: ContentfulEntriesResponse<ProductFields> = await getRes.json();
 
-  const found = data.items.find((item: any) => {
+  const found = data.items.find((item) => {
     const fields = item.fields;
     return (
-      fields.name?.[locale] === 'Produto Teste' &&
-      fields.slug?.[locale] === 'produto-teste'
+      fields.name?.[LOCALE] === 'Produto Teste' &&
+      fields.slug?.[LOCALE] === 'produto-teste'
     );
   });
 
   expect(found).toBeTruthy();
 
-  await deleteEntry(request, productId);
-  await deleteEntry(request, categoryId);
+  await client.cleanupEntry(productId);
+  await client.cleanupEntry(categoryId);
 });
 
 // =====================================================================
@@ -117,110 +66,69 @@ test('Product CRUD', async ({ request }) => {
 // =====================================================================
 
 // 2. Preço com tipo incorreto (string ao invés de número)
-test('Não deve permitir criar produto com preço como string', async ({ request }) => {
+test('Não deve permitir criar produto com preço como string', async () => {
   const productData = {
-    fields: {
-      name: { [locale]: 'Produto com erro de tipo' },
-      slug: { [locale]: 'produto-com-erro' },
-      description: { [locale]: 'Teste' },
-      price: { [locale]: 'dez reais' }, // erro aqui
-      available: { [locale]: true },
-      ingredients: { [locale]: ['Item 1'] },
-    },
+    name: { [LOCALE]: 'Produto com erro de tipo' },
+    slug: { [LOCALE]: 'produto-com-erro' },
+    description: { [LOCALE]: 'Teste' },
+    price: { [LOCALE]: 'dez reais' }, // erro aqui
+    available: { [LOCALE]: true },
+    ingredients: { [LOCALE]: ['Item 1'] },
   };
 
-  const res = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(productContentType),
-    data: productData,
-  });
-
+  const res = await client.createEntry(CONTENT_TYPES.PRODUTO, productData);
   expect(res.status()).not.toBe(201);
 });
 
 // 3. Referência para categoria inexistente
-test('Não deve permitir criar produto com referência inválida', async ({ request }) => {
-  const productData = {
-    fields: {
-      name: { [locale]: 'Produto Ref. Inválida' },
-      slug: { [locale]: 'produto-ref-invalida' },
-      description: { [locale]: 'Teste' },
-      price: { [locale]: 50 },
-      available: { [locale]: true },
-      ingredients: { [locale]: ['Item A'] },
-      category: {
-        [locale]: {
-          sys: {
-            type: 'Link',
-            linkType: 'Entry',
-            id: 'categoria-inexistente',
-          },
-        },
-      },
-    },
+test('Não deve permitir criar produto com referência inválida', async () => {
+  const productData: ProductFields = {
+    name: { [LOCALE]: 'Produto Ref. Inválida' },
+    slug: { [LOCALE]: 'produto-ref-invalida' },
+    description: { [LOCALE]: 'Teste' },
+    price: { [LOCALE]: 50 },
+    available: { [LOCALE]: true },
+    ingredients: { [LOCALE]: ['Item A'] },
+    category: { [LOCALE]: toEntryLink('categoria-inexistente') },
   };
 
-  const res = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(productContentType),
-    data: productData,
-  });
-
+  const res = await client.createEntry(CONTENT_TYPES.PRODUTO, productData);
   expect(res.status()).toBe(201); // criação pode ocorrer
   const created = await res.json();
   const id = created.sys.id;
 
   // Publicar deve falhar por referência inválida
-  const pubRes = await request.put(`${baseUrl}/entries/${id}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': String(created.sys.version),
-    },
-  });
-
+  const pubRes = await client.tryPublishEntry(id, created.sys.version);
   expect(pubRes.status()).not.toBe(200);
 
-  await deleteEntry(request, id);
+  await client.cleanupEntry(id);
 });
 
 // 4. Publicar produto com versão incorreta
-test('Não deve permitir publicar produto com versão errada', async ({ request }) => {
-  const productData = {
-    fields: {
-      name: { [locale]: 'Produto Versão Incorreta' },
-      slug: { [locale]: 'produto-versao-errada' },
-      description: { [locale]: 'Teste' },
-      price: { [locale]: 99.9 },
-      available: { [locale]: true },
-      ingredients: { [locale]: ['Item A'] },
-    },
+test('Não deve permitir publicar produto com versão errada', async () => {
+  const productData: ProductFields = {
+    name: { [LOCALE]: 'Produto Versão Incorreta' },
+    slug: { [LOCALE]: 'produto-versao-errada' },
+    description: { [LOCALE]: 'Teste' },
+    price: { [LOCALE]: 99.9 },
+    available: { [LOCALE]: true },
+    ingredients: { [LOCALE]: ['Item A'] },
   };
 
-  const res = await request.post(`${baseUrl}/entries`, {
-    headers: getContentHeaders(productContentType),
-    data: productData,
-  });
-
+  const res = await client.createEntry(CONTENT_TYPES.PRODUTO, productData);
   expect(res.status()).toBe(201);
   const created = await res.json();
 
-  const pubRes = await request.put(`${baseUrl}/entries/${created.sys.id}/published`, {
-    headers: {
-      ...getAuthHeaders(),
-      'X-Contentful-Version': '0',
-    },
-  });
-
+  const pubRes = await client.tryPublishEntry(created.sys.id, 0);
   expect(pubRes.status()).not.toBe(200);
 
-  await deleteEntry(request, created.sys.id);
+  await client.cleanupEntry(created.sys.id);
 });
 
 // 5. Token inválido
 test('Não deve acessar API com token inválido', async ({ request }) => {
-  const res = await request.get(`${baseUrl}/entries?content_type=${productContentType}`, {
-    headers: {
-      Authorization: 'Bearer token_invalido',
-    },
-  });
+  const invalidClient = new ContentfulClient(request, BASE_URL, 'token_invalido');
 
+  const res = await invalidClient.listEntries(CONTENT_TYPES.PRODUTO);
   expect(res.status()).toBe(401);
 });
