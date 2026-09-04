@@ -22,18 +22,18 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: playwright/api-lanches/Automação/package-lock.json
+          cache-dependency-path: playwright/api-lanches/playwright/package-lock.json
 
       - name: Install dependencies
-        working-directory: playwright/api-lanches/Automação
+        working-directory: playwright/api-lanches/playwright
         run: npm ci
 
       - name: Install Playwright browsers
-        working-directory: playwright/api-lanches/Automação
+        working-directory: playwright/api-lanches/playwright
         run: npx playwright install --with-deps
 
       - name: Run Playwright tests
-        working-directory: playwright/api-lanches/Automação
+        working-directory: playwright/api-lanches/playwright
         env:
           BASE_URL: ${{ vars.BASE_URL }}
           CONTENTFUL_ACCESS_TOKEN: ${{ vars.CONTENTFUL_ACCESS_TOKEN }}
