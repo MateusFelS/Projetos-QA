@@ -1,70 +1,83 @@
 import { test, expect } from '@playwright/test'
+import { HomePage } from './pages/home.page'
+import { CartPage } from './pages/cart.page'
+import { pedido, produto } from './data/test-data'
 
-test('Fluxo de navegação - Página do carrinho', async ({page}) => {
-  await page.goto('https://www.demoblaze.com')
+test.describe('Carrinho', () => {
+  test('Fluxo de navegação - Página do carrinho', async ({ page }) => {
+    const home = new HomePage(page)
 
-  await page.locator('#cartur').click()
-  await expect(page).toHaveURL('https://www.demoblaze.com/cart.html')
-})
+    await home.acessar()
+    await home.acessarCarrinho()
 
-test('Adicionar item ao carrinho', async ({ page }) => {
-  await page.goto('https://www.demoblaze.com')
-
-  await page.locator('.hrefch').filter({hasText:"Samsung galaxy s6"}).click()
-  await page.locator('.btn.btn-success.btn-lg').filter({hasText:'Add to cart'}).click()
-
-  page.once('dialog', async (dialog) => {
-    await expect(dialog.message()).toBe('Product added')
-  })
-})
-
-test('Remover item do carrinho', async ({ page }) => {
-  await page.goto('https://www.demoblaze.com')
-
-  await page.locator('.hrefch').filter({hasText:"Samsung galaxy s6"}).click()
-  await page.locator('.btn.btn-success.btn-lg').filter({hasText:'Add to cart'}).click()
-
-  page.once('dialog', async (dialog) => {
-    await dialog.accept();
+    await expect(page).toHaveURL('https://www.demoblaze.com/cart.html')
   })
 
-  await page.locator('#cartur').click()
+  test('Adicionar item ao carrinho', async ({ page }) => {
+    const home = new HomePage(page)
+    const cart = new CartPage(page)
 
-  await page.locator('text=Delete').click()
+    await home.acessar()
+    await home.selecionarProduto(produto)
 
-  await page.waitForSelector('#tbodyid tr', { state: 'detached', timeout: 5000 })
-  const remainingItems = await page.locator('#tbodyid tr').count()
+    page.once('dialog', async dialog => {
+      await expect(dialog.message()).toBe('Product added')
+      await dialog.accept()
+    })
 
-  await expect(remainingItems).toBe(0)
+    await cart.adicionarProduto()
+  })
+
+  test('Remover item do carrinho', async ({ page }) => {
+    const home = new HomePage(page)
+    const cart = new CartPage(page)
+
+    await home.acessar()
+    await home.selecionarProduto(produto)
+
+    page.once('dialog', async dialog => {
+      await dialog.accept()
+    })
+
+    await cart.adicionarProduto()
+    await home.acessarCarrinho()
+    await cart.removerProduto()
+
+    await expect(await cart.quantidadeDeItens()).toBe(0)
+  })
+
+  test('Mensagem de carrinho vazio', async ({ page }) => {
+    const home = new HomePage(page)
+    const cart = new CartPage(page)
+
+    await home.acessar()
+    await home.selecionarProduto(produto)
+
+    page.once('dialog', async dialog => {
+      await dialog.accept()
+    })
+
+    await cart.adicionarProduto()
+    await home.acessarCarrinho()
+
+    await cart.esperarCarrinhoVazio()
+  })
+
+  test('Adicionar item ao carrinho e finalizar compra', async ({ page }) => {
+    const home = new HomePage(page)
+    const cart = new CartPage(page)
+
+    await home.acessar()
+    await home.selecionarProduto(produto)
+
+    page.once('dialog', async dialog => {
+      await dialog.accept()
+    })
+
+    await cart.adicionarProduto()
+    await home.acessarCarrinho()
+
+    await cart.finalizarCompra(pedido)
+    await cart.esperarMensagemCompraRealizada()
+  })
 })
-
-test('Mensagem de carrinho vazio', async ({page}) => {
-  await page.goto('https://www.demoblaze.com')
-
-  await page.locator('.hrefch').filter({hasText:"Samsung galaxy s6"}).click()
-  await page.locator('.btn.btn-success.btn-lg').filter({hasText:'Add to cart'}).click()
-  
-  await page.locator('#cartur').click()
-  
-  await expect(page.locator('#page-wrapper')).toHaveText('Your cart is empty')
-})
-
-test('Adicionar item ao carrinho e finalizar compra', async ({ page }) => {
-  await page.goto('https://www.demoblaze.com')
-
-  await page.locator('.hrefch').filter({hasText:"Samsung galaxy s6"}).click()
-  await page.locator('.btn.btn-success.btn-lg').filter({hasText:'Add to cart'}).click()
-
-  await page.locator('#cartur').click()
-  await page.locator('.btn.btn-success').filter({hasText:'Place Order'}).click()
-  await page.fill('#name', 'João Teste')
-  await page.fill('#country', 'Brasil')
-  await page.fill('#city', 'São Paulo')
-  await page.fill('#card', '1234123412341234')
-  await page.fill('#month', '12')
-  await page.fill('#year', '2026')
-
-  await page.locator('.btn.btn-primary').filter({hasText:'Purchase'}).click()
-
-  await expect(page.locator('.sweet-alert')).toHaveText(/Thank you for your purchase/)
-});
