@@ -1,36 +1,55 @@
 import { test, expect } from '@playwright/test'
+import { HomePage } from './pages/home.page'
+import { LoginPage } from './pages/login.page'
+import { usuarios } from './data/test-data'
 
-test('Login com credenciais válidas', async ({page}) => {
-  await page.goto('https://www.demoblaze.com/')
-  await page.locator('#login2').click()
-  await page.locator('#loginusername').fill('testeqa_01')
-  await page.locator('#loginpassword').fill('123321')
-  await page.locator('.btn.btn-primary').filter({ hasText: 'Log in' }).click()
+test.describe('Login', () => {
+  test('Login com credenciais válidas', async ({ page }) => {
+    const home = new HomePage(page)
+    const login = new LoginPage(page)
 
-  await expect(page.locator('#nameofuser')).toHaveText('Welcome testeqa_01')
-})
+    await home.acessar()
+    await home.acessarLogin()
+    await login.fazerLogin(
+      usuarios.valido.username,
+      usuarios.valido.password
+    )
 
-test('Login com credenciais inválidas', async ({page}) => {
-  await page.goto('https://www.demoblaze.com/')
-  await page.locator('#login2').click()
-  await page.locator('#loginusername').fill('teste')
-  await page.locator('#loginpassword').fill('123')
-  await page.locator('.btn.btn-primary').filter({ hasText: 'Log in' }).click()
+    await expect(page.locator('#nameofuser'))
+      .toHaveText('Welcome testeqa_01')
+  })
 
-  page.once('dialog', async (dialog) => {
-    await expect(dialog.message()).toBe('Wrong password.')
+  test('Login com credenciais inválidas', async ({ page }) => {
+    const home = new HomePage(page)
+    const login = new LoginPage(page)
+
+    await home.acessar()
+    await home.acessarLogin()
+
+    page.once('dialog', async dialog => {
+      await expect(dialog.message()).toBe('Wrong password.')
+      await dialog.accept()
+    })
+
+    await login.fazerLogin(
+      usuarios.invalido.username,
+      usuarios.invalido.password
+    )
+  })
+
+  test('Login com campos vazios', async ({ page }) => {
+    const home = new HomePage(page)
+    const login = new LoginPage(page)
+
+    await home.acessar()
+    await home.acessarLogin()
+
+    page.once('dialog', async dialog => {
+      await expect(dialog.message())
+        .toBe('Please fill out Username and Password.')
+      await dialog.accept()
+    })
+
+    await login.fazerLogin('', '')
   })
 })
-
-test('Login com campos vazios', async ({page}) => {
-  await page.goto('https://www.demoblaze.com/')
-  await page.locator('#login2').click()
-  await page.locator('#loginusername').fill('')
-  await page.locator('#loginpassword').fill('')
-  await page.locator('.btn.btn-primary').filter({ hasText: 'Log in' }).click()
-
-  page.once('dialog', async (dialog) => {
-    await expect(dialog.message()).toBe('Please fill out Username and Password.')
-  })
-})
-
