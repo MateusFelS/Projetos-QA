@@ -1,14 +1,20 @@
 import { test, expect } from '@playwright/test'
+import { HomePage } from './pages/home.page'
+import { ContactPage } from './pages/contact.page'
+import { contato } from './data/test-data'
 
-test('Fluxo de navegação - Página de contato', async ({page}) => {
-    await page.goto('https://www.demoblaze.com')
-    await page.locator('.nav-link').filter({hasText:'Contact'}).click()
-    await page.locator('#recipient-email').fill('teste@teste.com')
-    await page.locator('#recipient-name').fill('Teste Name')
-    await page.locator('#message-text').fill('Mensagem')
-    await page.locator('.btn.btn-primary').filter({hasText:'Send message'}).click()
-    
-    page.once('dialog', async (dialog) => {
-        await expect(dialog.message()).toBe('Thanks for the message!!')
-    })
+test('Enviar mensagem pelo formulário de contato', async ({ page }) => {
+  const home = new HomePage(page)
+  const contact = new ContactPage(page)
+
+  await home.acessar()
+  await home.acessarContato()
+
+  page.once('dialog', async dialog => {
+    await expect(dialog.message()).toBe('Thanks for the message!!')
+    await dialog.accept()
+  })
+
+  await contact.preencherMensagem(contato)
+  await contact.enviar()
 })
