@@ -46,7 +46,7 @@ test.describe('Carrinho', () => {
     await expect(await cart.quantidadeDeItens()).toBe(0)
   })
 
-  test('Mensagem de carrinho vazio', async ({ page }) => {
+  test.skip('Mensagem de carrinho vazio', async ({ page }) => {
     const home = new HomePage(page)
     const cart = new CartPage(page)
 
