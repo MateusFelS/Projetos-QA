@@ -7,13 +7,6 @@ import type { ContentfulEntry } from './contentful.types';
  * pelos 4 specs (category/order/product/user). Antes, cada spec tinha
  * sua própria cópia de getAuthHeaders/getContentHeaders/publishEntry/
  * deleteEntry — qualquer mudança na API exigia editar 4 arquivos.
- *
- * NOTA DE REFATORAÇÃO (cleanup):
- * As versões antigas de "deleteEntry" eram levemente diferentes entre
- * os specs: category/user checavam o status antes de seguir, enquanto
- * order/product apagavam sem checar nada. Isso não mudava o resultado
- * de nenhum teste (é só teardown), então padronizei aqui pela versão
- * mais segura (`cleanupEntry`) para os 4 specs.
  */
 export class ContentfulClient {
   constructor(
