@@ -1,0 +1,46 @@
+# Limite de uma promoção por usuário
+
+## Descrição
+
+O sistema exibe novamente a mensagem promocional para o mesmo usuário após a promoção já ter sido confirmada, permitindo que a promoção seja acionada novamente.
+
+---
+
+## Pré-condições
+
+* Usuário acessando a aplicação **Coffee Cart**.
+* Promoção já confirmada com 3 itens no carrinho.
+
+---
+
+## Passos para reprodução
+
+1. Acessar a aplicação **Coffee Cart**.
+2. Adicionar os 3 itens necessários para ativar a promoção.
+3. Confirmar a promoção.
+4. Adicionar mais 2 unidades de **Café Expresso** ao carrinho.
+5. Verificar se a mensagem promocional é exibida novamente.
+
+---
+
+## Resultado esperado
+
+O sistema não deve reativar ou exibir novamente a mensagem promocional para o mesmo usuário após a promoção já ter sido confirmada.
+
+---
+
+## Resultado obtido
+
+A mensagem promocional é exibida novamente, indicando que a promoção pode ser acionada repetidamente pelo mesmo usuário.
+
+---
+
+## Impacto
+
+A possibilidade de reativar a mesma promoção pode permitir que o usuário obtenha o benefício mais de uma vez, contrariando a regra de limite de uma promoção por usuário.
+
+---
+
+## Evidências
+
+* [Imagem](INSERIR_LINK_DA_EVIDENCIA)
