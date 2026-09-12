@@ -1,0 +1,32 @@
+name: FakeStore Tests
+
+on:
+  push:
+    paths:
+      - 'cypress/cypress-fakestore-tests/**'
+  pull_request:
+    paths:
+      - 'cypress/cypress-fakestore-tests/**'
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: cypress/cypress-fakestore-tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Cypress tests
+        run: npx cypress run
