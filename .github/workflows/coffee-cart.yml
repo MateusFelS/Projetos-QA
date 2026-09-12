@@ -2,12 +2,12 @@ name: Coffee Cart Tests
 
 on:
   push:
-    paths:
-      - 'cypress/coffee-cart-tests/**'
+    branches:
+      - main
   pull_request:
-    paths:
-      - 'cypress/coffee-cart-tests/**'
-
+    branches:
+      - main
+      
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
