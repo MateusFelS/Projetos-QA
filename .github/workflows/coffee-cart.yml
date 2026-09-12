@@ -1,4 +1,4 @@
-name: Coffee Cart
+name: Coffee Cart Tests
 
 on:
   push:
