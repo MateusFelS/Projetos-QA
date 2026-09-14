@@ -10,8 +10,8 @@ on:
 
 jobs:
   cypress-run:
+    timeout-minutes: 30
     runs-on: ubuntu-latest
-
     defaults:
       run:
         working-directory: cypress/cypress-fakestore-tests
@@ -23,10 +23,20 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version: 'lts/*'
+          cache: npm
+          cache-dependency-path: cypress/cypress-fakestore-tests/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
       - name: Run Cypress tests
         run: npx cypress run
+
+      - name: Upload test report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-report
+          path: cypress/cypress-fakestore-tests/cypress/reports/
+          retention-days: 30
